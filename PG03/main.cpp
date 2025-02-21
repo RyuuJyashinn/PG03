@@ -13,17 +13,16 @@ enum GameState {
 };
 
 bool isBulletHitEnemy(Enemy* enemy, Bullet* bullet) {
-	double dis = sqrt((enemy->posX_ - bullet->posX_) * (enemy->posX_ - bullet->posX_) +
-		(enemy->posY_ - bullet->posY_) * (enemy->posY_ - bullet->posY_));
-	return (int)dis <= (enemy->radius_ + bullet->radius_);
+	double dis = sqrt(pow(enemy->GetPosX() - bullet->GetPosX(), 2) +
+		pow(enemy->GetPosY() - bullet->GetPosY(), 2));
+	return dis <= (enemy->GetRadius() + bullet->GetRadius());
 }
 
 bool isPlayerHitEnemy(Player* player, Enemy* enemy) {
-	double dis = sqrt((player->posX_ - enemy->posX_) * (player->posX_ - enemy->posX_) +
-		(player->posY_ - enemy->posY_) * (player->posY_ - enemy->posY_));
-	return (int)dis <= (player->radius_ + enemy->radius_);
+	double dis = sqrt(pow(player->GetPosX() - enemy->GetPosX(), 2) +
+		pow(player->GetPosY() - enemy->GetPosY(), 2));
+	return dis <= (player->GetRadius() + enemy->GetRadius());
 }
-
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -37,22 +36,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	Enemy* enemy[4];
-
-	enemy[0] = new Enemy(1,300, 100, 5, 15);
-	enemy[1] = new Enemy(1,640, 200, 5, 20);
-	enemy[2] = new Enemy(1,100, 300, 5, 15);
-	enemy[3] = new Enemy(1,1040, 400, 5, 20);
-
+	enemy[0] = new Enemy(true, 300, 100, 5, 15);  
+	enemy[1] = new Enemy(true, 640, 200, 5, 20);
+	enemy[2] = new Enemy(true, 100, 300, 5, 15);
+	enemy[3] = new Enemy(true, 1040, 400, 5, 20);
 
 	Player* player = new Player(600, 640, 5, 20);
 	for (int i = 0; i < MAX_BULLETS; i++) {
-		player->bullets_[i]->isShot_ = false;
-		player->bullets_[i]->posX_ = 0;
-		player->bullets_[i]->posY_ = 0;
-		player->bullets_[i]->speed_ = 20;
-		player->bullets_[i]->radius_ = 10;
+		player->bullets_[i]->SetIsShot(false);  
+		player->bullets_[i]->SetPosX(0);        
+		player->bullets_[i]->SetPosY(0);        
+		player->bullets_[i]->SetSpeed(20);      
+		player->bullets_[i]->SetRadius(10);     
 	}
-
 
 	int backGraph = Novice::LoadTexture("./images/room.png");
 	int titleGraph = Novice::LoadTexture("./images/title.png");
@@ -86,7 +82,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		case PLAY:
 			player->Update(keys, preKeys);
 			for (int i = 0; i < 4; i++) {
-				if (enemy[i]->isAlive_) {
+				if (enemy[i]->GetIsAlive()) { 
 					enemy[i]->Update();
 					if (isPlayerHitEnemy(player, enemy[i])) {
 						gameState = GAMEOVER;
@@ -95,14 +91,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 			for (int i = 0; i < 4; i++) {
 				for (int j = 0; j < MAX_BULLETS; j++) {
-					if (player->bullets_[j]->isShot_ && enemy[i]->isAlive_ &&
-						isBulletHitEnemy(enemy[i], player->bullets_[j])) {
-						enemy[i]->isAlive_ = false;
+					if (player->bullets_[j]->GetIsShot() &&  
+						enemy[i]->GetIsAlive() &&            
+						isBulletHitEnemy(enemy[i], player->bullets_[j]))
+					{
+						enemy[i]->SetIsAlive(false);  
 					}
 				}
 			}
-			
-			if (!enemy[0]->isAlive_ && !enemy[1]->isAlive_ && !enemy[2]->isAlive_ && !enemy[3]->isAlive_) {
+
+			if (!enemy[0]->GetIsAlive() &&  
+				!enemy[1]->GetIsAlive() &&
+				!enemy[2]->GetIsAlive() &&
+				!enemy[3]->GetIsAlive())
+			{
 				gameState = GAMECLEAR;
 			}
 			break;
@@ -111,39 +113,62 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 				gameState = TITLE;
 
-				enemy[0]->isAlive_ = true; enemy[0]->posX_ = 300; enemy[0]->posY_ = 100;
-				enemy[1]->isAlive_ = true; enemy[1]->posX_ = 640; enemy[1]->posY_ = 200;
-				enemy[2]->isAlive_ = true; enemy[2]->posX_ = 100; enemy[2]->posY_ = 300;
-				enemy[3]->isAlive_ = true; enemy[3]->posX_ = 1040; enemy[3]->posY_ = 400;
+				enemy[0]->SetIsAlive(true);  
+				enemy[0]->SetPosX(300);      
+				enemy[0]->SetPosY(100);      
 
-				player->posX_ = 600;
-				player->posY_ = 640;
+				enemy[1]->SetIsAlive(true);  
+				enemy[1]->SetPosX(640);      
+				enemy[1]->SetPosY(200);      
+
+				enemy[2]->SetIsAlive(true);  
+				enemy[2]->SetPosX(100);      
+				enemy[2]->SetPosY(300);      
+
+				enemy[3]->SetIsAlive(true);  
+				enemy[3]->SetPosX(1040);     
+				enemy[3]->SetPosY(400);      
+
+				player->SetPosX(600); 
+				player->SetPosY(640); 
+
 
 				for (int i = 0; i < MAX_BULLETS; i++) {
-					player->bullets_[i]->isShot_ = false;
-					player->bullets_[i]->posX_ = 0;
-					player->bullets_[i]->posY_ = 0;
+					player->bullets_[i]->SetIsShot(false);
+					player->bullets_[i]->SetPosX(0);      
+					player->bullets_[i]->SetPosY(0);      
 				}
 			}
 			break;
 
 		case GAMECLEAR:
 			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
-
 				gameState = TITLE;
 
-				enemy[0]->isAlive_ = true; enemy[0]->posX_ = 300; enemy[0]->posY_ = 100;
-				enemy[1]->isAlive_ = true; enemy[1]->posX_ = 640; enemy[1]->posY_ = 200;
-				enemy[2]->isAlive_ = true; enemy[2]->posX_ = 100; enemy[2]->posY_ = 300;
-				enemy[3]->isAlive_ = true; enemy[3]->posX_ = 1040; enemy[3]->posY_ = 400;
+				enemy[0]->SetIsAlive(true);  
+				enemy[0]->SetPosX(300);      
+				enemy[0]->SetPosY(100);      
 
-				player->posX_ = 600;
-				player->posY_ = 640;
+				enemy[1]->SetIsAlive(true);  
+				enemy[1]->SetPosX(640);      
+				enemy[1]->SetPosY(200);      
+
+				enemy[2]->SetIsAlive(true);  
+				enemy[2]->SetPosX(100);      
+				enemy[2]->SetPosY(300);      
+
+				enemy[3]->SetIsAlive(true);  
+				enemy[3]->SetPosX(1040);     
+				enemy[3]->SetPosY(400);      
+
+				player->SetPosX(600); 
+				player->SetPosY(640); 
+
 
 				for (int i = 0; i < MAX_BULLETS; i++) {
-					player->bullets_[i]->isShot_ = false;
-					player->bullets_[i]->posX_ = 0;
-					player->bullets_[i]->posY_ = 0;
+					player->bullets_[i]->SetIsShot(false);
+					player->bullets_[i]->SetPosX(0);      
+					player->bullets_[i]->SetPosY(0);      
 				}
 			}
 			break;

@@ -1,21 +1,21 @@
-#include<Novice.h>
-#include"Bullet.h"
-#include"Player.h"
+#include <Novice.h>
+#include "Bullet.h"
 
-
+Bullet::Bullet(int posX, int posY, int speed, int radius, bool isShot)
+	: posX_(posX), posY_(posY), speed_(speed), radius_(radius), isShot_(isShot) {}
 
 void Bullet::Update() {
-	if (Bullet::isShot_) {
-		Bullet::posY_ -= Bullet::speed_;
+	if (GetIsShot()) {
+		SetPosY(GetPosY() - GetSpeed());
 	}
 
-	if (Bullet::posY_ < 0) {
-		Bullet::isShot_ = false;
+	if (GetPosY() < 0) {
+		SetIsShot(false);
 	}
 }
 
 void Bullet::Draw() {
-	if (Bullet::isShot_) {
-		Novice::DrawEllipse(Bullet::posX_, Bullet::posY_, Bullet::radius_, Bullet::radius_, 0.0f, GREEN, kFillModeSolid);
+	if (GetIsShot()) {
+		Novice::DrawEllipse(GetPosX(), GetPosY(), GetRadius(), GetRadius(), 0.0f, GREEN, kFillModeSolid);
 	}
 }
